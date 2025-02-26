@@ -2,6 +2,7 @@ import sqlite3
 import json
 import logging
 from discord import File
+from discord.ext import commands
 from database import get_connection
 
 # Baca konfigurasi dari config.json
@@ -12,20 +13,6 @@ ID_LOG_PURCH = config['id_log_purch']  # Channel ID untuk log pembelian
 ID_HISTORY_BUY = config['id_history_buy']  # Channel ID untuk riwayat pembelian
 
 DATABASE = 'store.db'
-
-def add_stock_from_file(product_code: str):
-    try:
-        with open(f'{product_code}.txt', 'r') as file:
-            count = int(file.read().strip())
-            conn = get_connection()
-            cursor = conn.cursor()
-            cursor.execute("UPDATE products SET stock = stock + ? WHERE code = ?", (count, product_code))
-            conn.commit()
-            conn.close()
-            return f"Added {count} to stock of product with code {product_code}."
-    except Exception as e:
-        logging.error(f'Error in add_stock_from_file: {e}')
-        return f"An error occurred: {e}"
 
 async def process_purchase(bot, user, product_code, quantity):
     try:
@@ -78,3 +65,12 @@ async def log_history(bot, user, product_code, quantity):
     channel = bot.get_channel(ID_HISTORY_BUY)
     if channel:
         await channel.send(content=f"{user.mention} purchased {quantity} of product with code {product_code}.")
+
+class Trx(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    # Methods related to transactions can be added here
+
+async def setup(bot):
+    await bot.add_cog(Trx(bot))
