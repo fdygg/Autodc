@@ -4,7 +4,7 @@ import os
 import json
 import logging
 import asyncio
-from database import init_db
+from database import init_db, get_connection
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -40,9 +40,7 @@ async def on_message(message):
     logging.info(f'Message from {message.author}: {message.content}')
     await bot.process_commands(message)
 
-async def main():
-    init_db()
-    
+async def load_extensions():
     # Load Cogs from cogs folder
     for filename in os.listdir('./cogs'):
         if filename.endswith('.py'):
@@ -54,12 +52,10 @@ async def main():
         if filename.endswith('.py') and filename != 'balance_manager.py':
             logging.info(f'Loading ext: {filename}')
             await bot.load_extension(f'ext.{filename[:-3]}')
-# Muat semua ekstensi (cogs)
-async def load_extensions():
-    for filename in os.listdir('./ext'):
-        if filename.endswith('.py') and filename != 'trx.py':
-            await bot.load_extension(f'ext.{filename[:-3]}')
-            
+
+async def main():
+    init_db()
+    await load_extensions()
     await bot.start(TOKEN)
 
 if __name__ == '__main__':
