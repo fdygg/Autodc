@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 import logging
 from main import is_admin  # Import is_admin function from main.py
-from database import get_connection
+from database import get_connection, add_balance, subtract_balance
 
 DATABASE = 'store.db'
 
@@ -15,7 +15,7 @@ class AdminCommands(commands.Cog):
 
     @commands.command()
     @is_admin()
-    async def addProduct(self, ctx, name: str, code: str, price: int, description: str):
+    async def addProduct(self, ctx, name: str, code: str, price: int, description: str = ""):
         logging.info(f'addProduct command invoked by {ctx.author}')
         try:
             conn = self.db_connect()
@@ -36,6 +36,7 @@ class AdminCommands(commands.Cog):
     async def addStock(self, ctx, product_code: str):
         logging.info(f'addStock command invoked by {ctx.author}')
         try:
+            # Read the stock count from the file named by the product code
             with open(f'{product_code}.txt', 'r') as file:
                 count = int(file.read().strip())
                 conn = self.db_connect()
@@ -47,6 +48,12 @@ class AdminCommands(commands.Cog):
                 conn.commit()
                 conn.close()
                 await ctx.send(f"Added {count} to stock of product with code {product_code}.")
+        except FileNotFoundError:
+            logging.error(f'File not found for product code: {product_code}')
+            await ctx.send(f"File not found for product code: {product_code}")
+        except ValueError:
+            logging.error(f'Invalid content in file for product code: {product_code}')
+            await ctx.send(f"Invalid content in file for product code: {product_code}")
         except Exception as e:
             logging.error(f'Error in addStock: {e}')
             await ctx.send(f"An error occurred: {e}")
