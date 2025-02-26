@@ -10,6 +10,26 @@ def get_connection():
         print(f"Error connecting to database: {e}")
         return None
 
+def add_balance(growid, wl, dl, bgl):
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("UPDATE users SET balance_wl = balance_wl + ?, balance_dl = balance_dl + ?, balance_bgl = balance_bgl + ? WHERE growid = ?", (wl, dl, bgl, growid))
+        conn.commit()
+        conn.close()
+    except sqlite3.Error as e:
+        print(f"Error updating balance: {e}")
+
+def subtract_balance(growid, wl, dl, bgl):
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("UPDATE users SET balance_wl = balance_wl - ?, balance_dl = balance_dl - ?, balance_bgl = balance_bgl - ? WHERE growid = ?", (wl, dl, bgl, growid))
+        conn.commit()
+        conn.close()
+    except sqlite3.Error as e:
+        print(f"Error updating balance: {e}")
+
 # Inisialisasi database dan tabel jika belum ada
 def init_db():
     conn = get_connection()
@@ -31,9 +51,10 @@ def init_db():
     # Buat tabel products
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS products (
-        name TEXT,
-        code TEXT PRIMARY KEY,
-        price INTEGER,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        code TEXT NOT NULL UNIQUE,
+        price INTEGER NOT NULL,
         stock INTEGER DEFAULT 0,
         description TEXT
     )
