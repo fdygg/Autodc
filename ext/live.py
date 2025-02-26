@@ -14,7 +14,6 @@ DATABASE = 'store.db'
 class LiveStock(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.live_stock.start()
         self.message_id = None  # Store the ID of the live stock message
 
     def db_connect(self):
@@ -37,7 +36,7 @@ class LiveStock(commands.Cog):
         if products:
             for name, code, stock, price in products:
                 embed.add_field(
-                    name=f"🔰 {name} 🔰",
+                    name=f"🔸 {name} 🔸",
                     value=f"- Code: {code}\n- Stock: {stock}\n- Price: {price}",
                     inline=False
                 )
@@ -132,6 +131,10 @@ class LiveStock(commands.Cog):
     @live_stock.before_loop
     async def before_live_stock(self):
         await self.bot.wait_until_ready()
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        self.live_stock.start()  # Start the task when the bot is ready
 
 class SetGrowIDModal(Modal):
     def __init__(self, bot):
